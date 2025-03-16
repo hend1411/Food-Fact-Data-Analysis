@@ -1,0 +1,31 @@
+import pandas as pd
+
+# Load the cleaned data with specified dtypes
+dtype_dict = {
+    'calories': 'float64',  # Adjust as necessary
+}
+
+df = pd.read_csv("cleaned_open_food_facts.csv", dtype=dtype_dict, on_bad_lines='skip')
+
+# Clean up column names
+df.columns = df.columns.str.strip()
+
+# Check the columns
+print(df.columns.tolist())
+
+# Proceed with analysis
+if 'calories' in df.columns:
+    calorie_distribution = df['calories'].value_counts()
+    print(calorie_distribution)
+else:
+    print("Column 'calories' does not exist in the DataFrame.")
+
+df = pd.read_csv("cleaned_open_food_facts.csv", low_memory=False)
+
+# Check the first few rows and all column names
+print(df.columns.tolist())
+print(df.head())
+
+# Check for any columns related to calories
+possible_nutrition_columns = df.filter(like='nutr').columns.tolist()
+print("Possible nutritional columns:", possible_nutrition_columns)
