@@ -1,0 +1,47 @@
+import pandas as pd
+import requests
+import gzip
+import io
+
+# URL to the Open Food Facts data CSV
+csv_url = "https://static.openfoodfacts.org/data/en.openfoodfacts.org.products.csv.gz"
+
+# Function to retrieve and clean the data
+def fetch_and_clean_data(url):
+    try:
+        # Retrieve the compressed data
+        response = requests.get(url)
+        response.raise_for_status()  # Check for HTTP errors
+
+        # Decompress the gzip data
+        with gzip.GzipFile(fileobj=io.BytesIO(response.content)) as f:
+            # Read the CSV data into a DataFrame, handling bad lines
+            df = pd.read_csv(f, sep='\t', encoding='utf-8', on_bad_lines='skip')
+
+        # Display the first few rows of the DataFrame
+        print("Data fetched successfully. Preview:")
+        print(df.head())
+
+        # Clean the data: remove columns with too many NaN values
+        threshold = 0.5 * len(df)  # More than 50% NaN values
+        df_cleaned = df.dropna(thresh=threshold, axis=1)
+
+        # Optionally, reset index
+        df_cleaned.reset_index(drop=True, inplace=True)
+
+        print("Data cleaned. Preview of cleaned data:")
+        print(df_cleaned.head())
+
+        return df_cleaned
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return None
+
+# Fetch and clean the data
+cleaned_data = fetch_and_clean_data(csv_url)
+
+# Save the cleaned data to a new CSV file
+if cleaned_data is not None:
+    cleaned_data.to_csv("cleaned_open_food_facts.csv", index=False)
+    print("Cleaned data saved to 'cleaned_open_food_facts.csv'.")
